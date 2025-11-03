@@ -16,7 +16,7 @@ func GetAllPricesAt(
 	pairIndexes map[string]uint64, oracleFeeds map[string][]string, uniqueFeeds []string,
 ) (lib.PriceUpdates, error) {
 	// Query Pyth for the unique price feeds necessary
-	priceData, err := pythClient.GetHistoricalPriceUpdatesSync(ctx, timestamp, uniqueFeeds...)
+	priceData, err := pythClient.GetHistoricalPriceUpdatesSync(ctx, timestamp, uniqueFeeds)
 	if err != nil {
 		return nil, err
 	}
