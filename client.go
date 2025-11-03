@@ -16,7 +16,7 @@ type Benchmarks interface {
 	// the price feed keys (uses corresponding Pyth feed ID). Returns the Pyth PriceFeed struct
 	// and the price feed update data for each pair.
 	GetHistoricalPriceUpdatesSync(
-		ctx context.Context, timestamp time.Time, priceFeeds ...string,
+		ctx context.Context, timestamp time.Time, priceFeeds []string,
 	) (map[string]*apyth.PythStructsPriceFeed, error)
 
 	// Shutdown gracefully shuts down the Pyth Benchmarks client.
@@ -32,25 +32,25 @@ type Hermes interface {
 	// parallel. Takes the price feed keys (uses corresponding Pyth feed ID). Returns the Pyth
 	// PriceFeed struct and the price feed update data for each pair.
 	GetLatestPriceUpdatesAsync(
-		ctx context.Context, priceFeeds ...string,
+		ctx context.Context, priceFeeds []string,
 	) (map[string]*types.LatestPriceData, error)
 
 	// Queries the `v2/updates/price/latest` endpoint for all price feed ID together. Takes the
 	// price feed keys (uses corresponding Pyth feed ID). Returns the Pyth PriceFeed struct and the
 	// price feed update data for each pair.
 	GetLatestPriceUpdatesSync(
-		ctx context.Context, priceFeeds ...string,
+		ctx context.Context, priceFeeds []string,
 	) (map[string]*types.LatestPriceData, error)
 
 	// Subscribe price feed from the streaming `v2/updates/price/stream` endpoint. Ensures this
 	// only happens once in the scope of runtime. Any further calls to this are unnecessary and
 	// no-ops.
-	SubscribePriceStreaming(ctx context.Context, priceFeeds ...string)
+	SubscribePriceStreaming(ctx context.Context, priceFeeds []string)
 
 	// Queries cached price feed update data, obtained from the SSE streaming endpoint.
 	// Returns the Pyth PriceFeed struct and the price feed update data for each pair.
 	GetCachedLatestPriceUpdates(
-		ctx context.Context, priceFeeds ...string,
+		ctx context.Context, priceFeeds []string,
 	) (map[string]*types.LatestPriceData, error)
 
 	// Gracefully shuts down the Pyth Hermes client.

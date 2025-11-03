@@ -23,13 +23,13 @@ func GetAllLatestPrices(
 	)
 	switch qs.RequestType {
 	case StreamCached:
-		priceData, err = pythClient.GetCachedLatestPriceUpdates(ctx, uniqueFeeds...)
+		priceData, err = pythClient.GetCachedLatestPriceUpdates(ctx, uniqueFeeds)
 	case LatestSync:
-		priceData, err = pythClient.GetLatestPriceUpdatesSync(ctx, uniqueFeeds...)
+		priceData, err = pythClient.GetLatestPriceUpdatesSync(ctx, uniqueFeeds)
 	case LatestAsync:
 		fallthrough
 	default:
-		priceData, err = pythClient.GetLatestPriceUpdatesAsync(ctx, uniqueFeeds...)
+		priceData, err = pythClient.GetLatestPriceUpdatesAsync(ctx, uniqueFeeds)
 	}
 	if err != nil {
 		return nil, err
