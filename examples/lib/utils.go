@@ -36,7 +36,7 @@ func GetPriceUpdateFromPythStructsPriceFeed(
 	return &PriceUpdate{
 		PairIndex: pairIndex,
 		Price:     NormalizeToPrecision(psp.Price, int(-psp.Expo), desiredPrecision),
-		Conf:      NormalizeToPrecision(int64(psp.Conf), int(-psp.Expo), desiredPrecision),
+		Conf:      NormalizeToPrecision(safeUint64ToInt64(psp.Conf), int(-psp.Expo), desiredPrecision),
 		TimeStamp: psp.PublishTime.Uint64(),
 	}
 }
@@ -68,4 +68,11 @@ func CalculateTriangularConf(
 			(math.Pow(float64(quoteC), 2) / math.Pow(float64(quoteP), 2)),
 	)
 	return Price(triangularPrice * confMultiplier * math.Pow10(desiredPrecision))
+}
+
+func safeUint64ToInt64(u uint64) int64 {
+	if u > math.MaxInt64 {
+		return math.MaxInt64
+	}
+	return int64(u)
 }
