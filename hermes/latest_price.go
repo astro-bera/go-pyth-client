@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/calbera/go-pyth-client/feeds"
 	"github.com/calbera/go-pyth-client/types"
 	"golang.org/x/sync/errgroup"
 )
@@ -14,15 +13,15 @@ import (
 // feed keys (uses corresponding Pyth feed ID). Returns the Pyth PriceFeed struct and the price
 // feed update data for each pair.
 func (c *Client) GetLatestPriceUpdatesSync(
-	_ context.Context, priceFeeds ...string,
+	_ context.Context, priceFeedIDs []string,
 ) (map[string]*types.LatestPriceData, error) {
 	// Validate parameters.
-	if len(priceFeeds) == 0 {
+	if len(priceFeedIDs) == 0 {
 		return nil, nil
 	}
 
 	// Build and fire the request.
-	resp, err := c.client.Get(c.buildBatchURLLatestPrice(priceFeeds...))
+	resp, err := c.client.Get(c.buildBatchURLLatestPrice(priceFeedIDs))
 	if err != nil {
 		return nil, err
 	}
@@ -42,10 +41,10 @@ func (c *Client) GetLatestPriceUpdatesSync(
 // Takes the price feed keys (uses corresponding Pyth feed ID). Returns the Pyth PriceFeed struct
 // and the price feed update data for each pair.
 func (c *Client) GetLatestPriceUpdatesAsync(
-	ctx context.Context, priceFeeds ...string,
+	ctx context.Context, priceFeedIDs []string,
 ) (map[string]*types.LatestPriceData, error) {
 	// Validate parameters.
-	if len(priceFeeds) == 0 {
+	if len(priceFeedIDs) == 0 {
 		return nil, nil
 	}
 
@@ -56,17 +55,15 @@ func (c *Client) GetLatestPriceUpdatesAsync(
 	)
 
 	// Fetch the price data results in parallel.
-	g.SetLimit(len(priceFeeds))
-	for _, priceFeed := range priceFeeds {
+	g.SetLimit(len(priceFeedIDs))
+	for _, priceFeedID := range priceFeedIDs {
 		g.Go(func() error {
-			lpd, err := c.fetchIndividualPriceData(
-				feeds.MustGetPriceFeedID(c.cfg.feedVersion, priceFeed),
-			)
+			lpd, err := c.fetchIndividualPriceData(priceFeedID)
 			if err != nil {
 				return err
 			}
 
-			results.Store(priceFeed, lpd)
+			results.Store(priceFeedID, lpd)
 
 			return nil
 		})
@@ -78,11 +75,11 @@ func (c *Client) GetLatestPriceUpdatesAsync(
 	}
 
 	// Resolve the results into the prices return map.
-	prices := make(map[string]*types.LatestPriceData, len(priceFeeds))
-	for _, priceFeed := range priceFeeds {
-		if lpd, ok := results.Load(priceFeed); ok {
+	prices := make(map[string]*types.LatestPriceData, len(priceFeedIDs))
+	for _, priceFeedID := range priceFeedIDs {
+		if lpd, ok := results.Load(priceFeedID); ok {
 			//nolint:revive // is the only type in the map.
-			prices[priceFeed] = lpd.(*types.LatestPriceData)
+			prices[priceFeedID] = lpd.(*types.LatestPriceData)
 		}
 	}
 	return prices, nil

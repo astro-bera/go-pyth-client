@@ -5,7 +5,6 @@ import (
 	"math/big"
 
 	"github.com/calbera/go-pyth-client/bindings/apyth"
-	"github.com/calbera/go-pyth-client/feeds"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -58,7 +57,7 @@ func resolveMany(
 		}
 		pf.EmaPrice.Conf = emaConfVal.Uint64()
 
-		priceResults[feeds.MustGetPriceFeed(feeds.EVMStable, pr.ID)] = pf
+		priceResults[pr.ID] = pf
 	}
 
 	return nil

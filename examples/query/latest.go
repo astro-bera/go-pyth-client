@@ -59,10 +59,13 @@ func GetAllLatestPrices(
 			// Set the update fee depending on the request type to the API.
 			if qs.RequestType == LatestAsync {
 				// If latest async, each feed's update data is stored separately.
-				pu.PythUpdateFee = big.NewInt(int64(qs.SingleUpdateFee))
+				pu.PythUpdateFee = new(big.Int).SetUint64(uint64(qs.SingleUpdateFee))
 			} else {
 				// For other request types, all feeds' update data is stored in each feed's data.
-				pu.PythUpdateFee = big.NewInt(int64(qs.SingleUpdateFee) * int64(len(uniqueFeeds)))
+				pu.PythUpdateFee = new(big.Int).Mul(
+					new(big.Int).SetUint64(uint64(qs.SingleUpdateFee)),
+					big.NewInt(int64(len(uniqueFeeds))),
+				)
 			}
 
 			allPairPrices[pairIndex] = pu
@@ -100,11 +103,17 @@ func GetAllLatestPrices(
 				pu.PythUpdateData = [][]byte{
 					base.PythUpdateData[0], quote.PythUpdateData[0],
 				}
-				pu.PythUpdateFee = big.NewInt(int64(qs.SingleUpdateFee) * 2)
+				pu.PythUpdateFee = new(big.Int).Mul(
+					new(big.Int).SetUint64(uint64(qs.SingleUpdateFee)),
+					big.NewInt(2),
+				)
 			} else {
 				// For other request types, all feeds' update data is stored in each feed's data.
 				pu.PythUpdateData = base.PythUpdateData
-				pu.PythUpdateFee = big.NewInt(int64(qs.SingleUpdateFee) * int64(len(uniqueFeeds)))
+				pu.PythUpdateFee = new(big.Int).Mul(
+					new(big.Int).SetUint64(uint64(qs.SingleUpdateFee)),
+					big.NewInt(int64(len(uniqueFeeds))),
+				)
 			}
 
 			allPairPrices[pairIndex] = pu

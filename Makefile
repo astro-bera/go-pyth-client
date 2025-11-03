@@ -38,12 +38,12 @@ golangci-install:
 golangci:
 	@$(MAKE) golangci-install
 	@echo "--> Running linter"
-	@go list -f '{{.Dir}}/...' -m | xargs go run github.com/golangci/golangci-lint/cmd/golangci-lint run --config ./.golangci.yml --timeout=10m --concurrency 8 
+	@go list -f '{{.Dir}}/...' -m | xargs golangci-lint run --config ./.golangci.yml --timeout=10m --concurrency 8 
 
 golangci-fix:
 	@$(MAKE) golangci-install
 	@echo "--> Running linter"
-	@go list -f '{{.Dir}}/...' -m | xargs go run github.com/golangci/golangci-lint/cmd/golangci-lint run --config ./.golangci.yml --timeout=10m --fix --concurrency 8 
+	@go list -f '{{.Dir}}/...' -m | xargs golangci-lint run --config ./.golangci.yml --timeout=10m --fix --concurrency 8 
 
 #################
 #     gosec     #

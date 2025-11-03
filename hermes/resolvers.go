@@ -5,7 +5,6 @@ import (
 	"math/big"
 
 	"github.com/calbera/go-pyth-client/bindings/apyth"
-	"github.com/calbera/go-pyth-client/feeds"
 	"github.com/calbera/go-pyth-client/types"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -138,7 +137,7 @@ func (c *Client) resolveMany(lpr *latestPriceResponse, lpds map[string]*types.La
 		}
 
 		// Assign the price data to its corresponding feed ID.
-		lpds[feeds.MustGetPriceFeed(c.cfg.feedVersion, pr.ID)] = lpd
+		lpds[pr.ID] = lpd
 	}
 
 	return nil

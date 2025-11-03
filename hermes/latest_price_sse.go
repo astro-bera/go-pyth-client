@@ -2,6 +2,7 @@ package hermes
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/calbera/go-pyth-client/types"
+	"github.com/ethereum/go-ethereum/common"
 	sse "github.com/r3labs/sse/v2"
 )
 
@@ -20,9 +22,9 @@ const (
 
 // Subscribe price feed from the streaming `v2/updates/price/stream` endpoint. Ensures this only
 // happens once in the scope of runtime. Any further calls to this are unnecessary and no-ops.
-func (c *Client) SubscribePriceStreaming(ctx context.Context, priceFeeds ...string) {
+func (c *Client) SubscribePriceStreaming(ctx context.Context, priceFeedIDs []string) {
 	c.subscribeOnce.Do(func() {
-		client := sse.NewClient(c.buildBatchURLStream(priceFeeds...))
+		client := sse.NewClient(c.buildBatchURLStream(priceFeedIDs))
 
 		subscribe := func() error {
 			return client.SubscribeRawWithContext(ctx, func(msg *sse.Event) {
@@ -40,11 +42,11 @@ func (c *Client) SubscribePriceStreaming(ctx context.Context, priceFeeds ...stri
 // Queries cached price feed update data, obtained from sse streaming endpoints.
 // Returns the Pyth PriceFeed struct and the price feed update data for each pair.
 func (c *Client) GetCachedLatestPriceUpdates(
-	ctx context.Context, priceFeeds ...string,
+	ctx context.Context, priceFeedIDs []string,
 ) (map[string]*types.LatestPriceData, error) {
 	// Validate parameters
-	if len(priceFeeds) == 0 {
-		return nil, errors.New("zero length of price feeds is an invalid input")
+	if len(priceFeedIDs) == 0 {
+		return nil, errors.New("zero length of price feed ids is an invalid input")
 	}
 
 	// Wait for the ready signal
@@ -56,11 +58,13 @@ func (c *Client) GetCachedLatestPriceUpdates(
 	defer c.ssePriceCached.mu.RUnlock()
 
 	cachedUpdates := make(map[string]*types.LatestPriceData)
-	for _, priceFeed := range priceFeeds {
-		if _, ok := c.ssePriceCached.latestPrice[priceFeed]; !ok {
-			return nil, fmt.Errorf("this price feed has not been subscribed to: %s", priceFeed)
+	for _, priceFeedID := range priceFeedIDs {
+		priceFeedIDRaw := hex.EncodeToString(common.FromHex(priceFeedID))
+
+		if _, ok := c.ssePriceCached.latestPrice[priceFeedIDRaw]; !ok {
+			return nil, fmt.Errorf("this price feed has not been subscribed to: %s", priceFeedID)
 		}
-		cachedUpdates[priceFeed] = c.ssePriceCached.latestPrice[priceFeed]
+		cachedUpdates[priceFeedID] = c.ssePriceCached.latestPrice[priceFeedIDRaw]
 	}
 	return cachedUpdates, nil
 }

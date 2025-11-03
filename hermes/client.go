@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/calbera/go-pyth-client/bindings/apyth"
-	"github.com/calbera/go-pyth-client/feeds"
 	"github.com/calbera/go-pyth-client/types"
 )
 
@@ -73,24 +72,23 @@ func (c *Client) Shutdown() {
 }
 
 // Builds the API endpoint for querying multiple feeds on `v2/updates/price/latest`.
-func (c *Client) buildBatchURLLatestPrice(priceFeeds ...string) string {
-	return c.buildBatchURL(latestPriceAPI, priceFeeds...)
+func (c *Client) buildBatchURLLatestPrice(priceFeedIDs []string) string {
+	return c.buildBatchURL(latestPriceAPI, priceFeedIDs)
 }
 
 // Builds the API endpoint for querying multiple feeds on `v2/updates/price/stream`.
-func (c *Client) buildBatchURLStream(priceFeeds ...string) string {
-	return c.buildBatchURL(priceStreamAPI, priceFeeds...)
+func (c *Client) buildBatchURLStream(priceFeedIDs []string) string {
+	return c.buildBatchURL(priceStreamAPI, priceFeedIDs)
 }
 
 // Builds the API endpoint for querying multiple feeds on `v2/updates/price/latest`.
-func (c *Client) buildBatchURL(apiName string, priceFeeds ...string) string {
+func (c *Client) buildBatchURL(apiName string, priceFeedIDs []string) string {
 	// Batch the price feed IDs into a single query string.
-	urlComponents := make([]string, len(priceFeeds)+2)
+	urlComponents := make([]string, len(priceFeedIDs)+2)
 	urlComponents[0] = c.cfg.APIEndpoint
 	urlComponents[1] = apiName
-	for i, priceFeed := range priceFeeds {
-		urlComponents[i+2] = "ids[]=" +
-			feeds.MustGetPriceFeedID(c.cfg.feedVersion, priceFeed) + "&"
+	for i, priceFeedID := range priceFeedIDs {
+		urlComponents[i+2] = "ids[]=" + priceFeedID + "&"
 	}
 
 	return strings.Join(urlComponents, "")
